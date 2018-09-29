@@ -1,0 +1,171 @@
+---
+ - hosts: localhost
+   become: yes
+   become_method: sudo
+   vars:
+     website: abc
+
+   tasks:
+  
+   - name: Installing epel release 
+     yum: name=epel-release state=present
+   
+   - name: Installing SSL 
+     yum: name=mod_ssl state=present
+
+   - name: Installng Apache httpd
+     yum: name=httpd state=present
+  
+   - name: Updating new Conf file
+     template: src=/home/khaleel/apache/httpd.conf.j2 dest=/etc/httpd/conf/httpd.conf  
+   
+   - name: Adding Document root.
+     file:
+       path: /var/www/html/{{ website }}.com
+       state: directory
+       owner: root
+       group: root
+       mode: 0755
+
+   - name: Adding .html
+     template:
+       src: /home/khaleel/apache/websites.html.j2
+       dest: /var/www/html/{{ website }}.com/{{ website }}.html
+       owner: root
+       group: root
+       mode: 0644
+
+   - name: Adding Log Dir.
+     file:
+       path: /var/log/httpd/{{ website }}.com
+       state: directory
+       owner: root
+       group: root
+       mode: 0755
+
+   - name: Adding Error Log file.
+     file:
+       path: /var/log/httpd/{{ website }}.com/error_log
+       state: touch
+       owner: root
+       group: root
+       mode: 0644
+
+   - name: Adding Access Log file.
+     file:
+       path: /var/log/httpd/{{ website }}.com/access_log
+       state: touch
+       owner: root
+       group: root
+       mode: 0644
+
+
+   - name: Adding directory sites-available.
+     file: 
+       path: /etc/httpd/sites-available 
+       state: directory
+       owner: root
+       group: root
+       mode: 0755
+   
+   - name: Adding template
+     template: 
+       src: /home/khaleel/apache/websites.com.conf.j2 
+       dest: /etc/httpd/sites-available/{{ website }}.com.conf
+       owner: root
+       group: root
+       mode: 0644
+
+
+   - name: Adding directory sites-enabled.
+     file:
+      path: /etc/httpd/sites-enabled 
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
+  
+   - name: Linking Available to Enable - conf
+     file:
+      src: /etc/httpd/sites-available/{{ website }}.com.conf 
+      dest: /etc/httpd/sites-enabled/{{ website }}.com.conf
+      owner: root 
+      group: root 
+      state: link
+
+   - name: Working with SSL Creating dir in /etc/ssl/private.
+     file:
+      path: /etc/ssl/private 
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
+   
+   - name: Working with SSL Creating dir in /etc/ssl/certs.
+     file:
+      path: /etc/ssl/certs
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
+
+   - name: Adding Certs in ssl/certs
+     copy: 
+       src: /home/khaleel/apache/certs/abc-selfsigned.crt 
+       dest: /etc/ssl/certs/abc-selfsigned.crt
+       owner: root
+       group: root
+       mode: 0644
+ 
+   - name: Adding key in ssl/private
+     copy: 
+       src: /home/khaleel/apache/certs/abc-selfsigned.key  
+       dest: /etc/ssl/private/abc-selfsigned.key
+       owner: root
+       group: root
+       mode: 0644
+
+   - name: Adding Certs in ssl/certs
+     copy: 
+       src: /home/khaleel/apache/certs/xyz-selfsigned.crt
+       dest: /etc/ssl/certs/xyz-selfsigned.crt
+       owner: root
+       group: root
+       mode: 0644
+
+   - name: Adding key in ssl/private
+     copy: 
+       src: /home/khaleel/apache/certs/xyz-selfsigned.key  
+       dest: /etc/ssl/private/xyz-selfsigned.key
+       owner: root
+       group: root
+       mode: 0644
+
+   - name: Adding template
+     template:
+       src: /home/khaleel/apache/ssl-websites.com.conf.j2
+       dest: /etc/httpd/sites-available/ssl-{{ website }}.com.conf
+       owner: root
+       group: root
+       mode: 0644
+
+   - name: Linking Available to Enable - conf
+     file:
+      src: /etc/httpd/sites-available/ssl-{{ website }}.com.conf
+      dest: /etc/httpd/sites-enabled/ssl-{{ website }}.com.conf
+      owner: root
+      group: root
+      state: link
+
+   - name: Start Httpd service
+     service:
+       name: httpd
+       state: started
+
+  
+     handlers:
+     - name: restart tomcat
+       service:
+         name: tomcat
+         state: restarted
+

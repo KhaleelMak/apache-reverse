@@ -1,0 +1,11 @@
+<VirtualHost *:443>
+    ServerName www.{{ website }}.com
+    ServerAlias {{ website }}.com
+    DocumentRoot /var/www/html/{{ website }}.com/
+    ErrorLog /var/log/httpd/{{ website }}.com/error_log
+    CustomLog /var/log/httpd/{{ website }}.com/access_log combined
+
+    SSLEngine on
+    SSLCertificateFile /etc/ssl/certs/{{ website }}-selfsigned.crt
+    SSLCertificateKeyFile /etc/ssl/private/{{ website }}-selfsigned.key
+</VirtualHost>

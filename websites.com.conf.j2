@@ -1,0 +1,18 @@
+
+<VirtualHost *:80>
+    ServerName www.{{ website }}.com
+    ServerAlias {{ website }}.com
+    DocumentRoot /var/www/html/{{ website }}.com/
+    ErrorLog /var/log/httpd/{{ website }}.com/error_log
+    CustomLog /var/log/httpd/{{ website }}.com/access_log combined
+ProxyRequests On
+        ProxyPass /{{ website }}  http://172.31.29.217:8080/{{ website }}/
+        ProxyPassReverse /{{ website }} http://172.31.29.217:8080/{{ website }}/
+
+        <Location "/{{ website }}">
+        Order allow,deny
+        Allow from all
+        </Location>
+
+</VirtualHost>
+
